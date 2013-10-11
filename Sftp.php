@@ -14,8 +14,8 @@ class SFTP {
 	var $pubkey		= '';
 	var $prikey		= '';
 	var $port		= 22;
-	var $method		= 'pass';
-	var $passive	= TRUE;
+	var $method		= 'pass'; // Can be "pass" or "key"
+	//var $passive	= TRUE;
 	var $debug		= FALSE;
 	var $conn_id	= FALSE;
 	var $sftp		= FALSE;
@@ -39,7 +39,7 @@ class SFTP {
 		// Make sure that the SSH2 pecl is installed
 		if (!function_exists('ssh2_connect'))
 		{
-			log_message('error', "SSH2 pecl is not installed");
+			log_message('error', "SSH2 PECL is not installed");
 			exit();
 		}
 	}
@@ -54,7 +54,7 @@ class SFTP {
 	 * @return	void
 	 * @version 1.0
 	 */
-	function initialize($config = array())
+	public function initialize($config = array())
 	{
 		foreach ($config as $key => $val)
 		{
@@ -78,9 +78,8 @@ class SFTP {
 	 * @return	bool
 	 * @version 1.0
 	 */
-	function connect($config = array())
+	public function connect($config = array())
 	{
-
 		if (count($config) > 0)
 		{
 			$this->initialize($config);
@@ -141,7 +140,7 @@ class SFTP {
 	 * @return	bool
 	 * @version 1.0
 	 */
-	function _login_pass()
+	private function _login_pass()
 	{
 		return @ssh2_auth_password($this->conn_id, $this->username, $this->password);
 	}
@@ -153,7 +152,7 @@ class SFTP {
 	 * @return	bool
 	 * @version 1.0
 	 */
-	function _login_keys()
+	private function _login_keys()
 	{
 		return @ssh2_auth_pubkey_file($this->conn_id, $this->username, $this->pubkeyfile, $this->privkeyfile); // need to support passphrase
 	}
@@ -168,7 +167,7 @@ class SFTP {
 	 * @return	bool
 	 * @version 1.0
 	 */
-	function _is_conn()
+	private function _is_conn()
 	{
 		if (!is_resource($this->conn_id) && !is_resource($this->sftp))
 		{
@@ -198,7 +197,7 @@ class SFTP {
 	 * @param	bool
 	 * @return	bool
 	 */
-	function changedir($path = '', $supress_debug = FALSE)
+	public function changedir($path = '', $supress_debug = FALSE)
 	{
 		if ($path == '' OR ! $this->_is_conn())
 		{
@@ -229,7 +228,7 @@ class SFTP {
 	 * @param	string
 	 * @return	bool
 	 */
-	function mkdir($path = '', $permissions = '0777')
+	public function mkdir($path = '', $permissions = '0777')
 	{
 		if ($path == '' || !$this->_is_conn())
 		{
@@ -263,7 +262,7 @@ class SFTP {
 	 * @param	string
 	 * @return	bool
 	 */
-	function upload($locpath, $rempath, $mode = 'auto', $permissions = NULL)
+	public function upload($locpath, $rempath, $mode = 'auto', $permissions = NULL)
 	{
 		if (!$this->_is_conn())
 		{
@@ -322,7 +321,7 @@ class SFTP {
 	 * @param	string
 	 * @return	bool
 	 */
-	function download($rempath, $locpath, $mode = 'auto')
+	public function download($rempath, $locpath, $mode = 'auto')
 	{
 		if ( ! $this->_is_conn())
 		{
@@ -365,7 +364,7 @@ class SFTP {
 	 * @param	bool
 	 * @return	bool
 	 */
-	function rename($old_file, $new_file, $move = FALSE)
+	public function rename($old_file, $new_file, $move = FALSE)
 	{
 		if ( ! $this->_is_conn())
 		{
@@ -398,7 +397,7 @@ class SFTP {
 	 * @param	string
 	 * @return	bool
 	 */
-	function move($old_file, $new_file)
+	public function move($old_file, $new_file)
 	{
 		return $this->rename($old_file, $new_file, TRUE);
 	}
@@ -413,7 +412,7 @@ class SFTP {
 	 * @param	string
 	 * @return	bool
 	 */
-	function delete_file($filepath)
+	public function delete_file($filepath)
 	{
 		if ( ! $this->_is_conn())
 		{
@@ -445,7 +444,7 @@ class SFTP {
 	 * @param	string
 	 * @return	bool
 	 */
-	function delete_dir($filepath)
+	public function delete_dir($filepath)
 	{
 		if ( ! $this->_is_conn())
 		{
@@ -495,7 +494,7 @@ class SFTP {
 	 * @param	string	the permissions
 	 * @return	bool
 	 */
-	function chmod($path, $perm)
+	public function chmod($path, $perm)
 	{
 		if (!$this->_is_conn())
 		{
@@ -535,7 +534,7 @@ class SFTP {
 	 * @access	public
 	 * @return	array
 	 */
-	function list_files($path = '.')
+	public function list_files($path = '.')
 	{
 		if (!$this->_is_conn())
 		{
@@ -570,7 +569,7 @@ class SFTP {
 	 * @param	string	path to destination - include the base folder with trailing slash
 	 * @return	bool
 	 */
-	function mirror($locpath, $rempath)
+	public function mirror($locpath, $rempath)
 	{
 		if ( ! $this->_is_conn())
 		{
@@ -622,7 +621,7 @@ class SFTP {
 	 * @param	string
 	 * @return	string
 	 */
-	function _getext($filename)
+	private function _getext($filename)
 	{
 		if (FALSE === strpos($filename, '.'))
 		{
@@ -643,7 +642,7 @@ class SFTP {
 	 * @param	string
 	 * @return	string
 	 */
-	function _settype($ext)
+	private function _settype($ext)
 	{
 		$text_types = array(
 							'txt',
@@ -675,7 +674,7 @@ class SFTP {
 	 * @param	string	path to destination
 	 * @return	bool
 	 */
-	function close()
+	public function close()
 	{
 		if ( ! $this->_is_conn())
 		{
@@ -694,16 +693,16 @@ class SFTP {
 	 * @param	string
 	 * @return	bool
 	 */
-	function _error($line)
+	private function _error($line)
 	{
-		$CI =& get_instance();
-		$CI->lang->load('ftp');
-		show_error($CI->lang->line($line));
+		//$CI =& get_instance();
+		//$CI->lang->load('ftp');
+		show_error($line);
 	}
 
 
 }
-// END FTP Class
+// END SFTP Class
 
-/* End of file Ftp.php */
-/* Location: ./system/libraries/Ftp.php */
+/* End of file Sfto.php */
+/* Location: ./application/libraries/Sftp.php */
