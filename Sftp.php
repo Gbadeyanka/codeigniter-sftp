@@ -8,17 +8,17 @@
  */
 class SFTP {
 
-	var $hostname	= '';
-	var $username	= '';
-	var $password	= '';
-	var $pubkey		= '';
-	var $prikey		= '';
-	var $port		= 22;
-	var $method		= 'pass'; // Can be "pass" or "key"
-	//var $passive	= TRUE;
-	var $debug		= FALSE;
-	var $conn_id	= FALSE;
-	var $sftp		= FALSE;
+	var $hostname		= '';		// the hostname of the server
+	var $username		= '';		// username of the server
+	var $password		= '';		// password of the server
+	var $pubkeyfile		= '';		// path to your public key file (e.g. /Users/username/.ssh/id_rsa.pub)
+	var $prikeyfile		= '';		// path to your private key file (e.g. /Users/username/.ssh/id_rsa)
+	var $passphrse		= '';		// the passphrase of your key (leave blank if you don't have one)
+	var $port			= 22;
+	var $method			= 'key'; 	// By default we will login via username/password
+	var $debug			= FALSE;
+	var $conn_id		= FALSE;
+	var $sftp			= FALSE;
 
 
 	/**
@@ -94,19 +94,7 @@ class SFTP {
 			return FALSE;
 		}		
 		
-		if ($this->method == 'pass')
-		{
-			if (!$this->_login_pass())
-			{
-				if ($this->debug == TRUE)
-				{
-					$this->_error('sftp_unable_to_login');
-				}
-				return FALSE;
-			}		
-		}
-		
-		elseif ($this->method == 'auth')
+		if ($this->method == 'auth')
 		{
 			if (!$this->_login_keys())
 			{
@@ -120,13 +108,15 @@ class SFTP {
 		
 		else
 		{
-			if ($this->debug == TRUE)
+			if (!$this->_login_pass())
 			{
-				$this->_error('sftp_invalid_login_method');
-			}
-			return FALSE;			
+				if ($this->debug == TRUE)
+				{
+					$this->_error('sftp_unable_to_login');
+				}
+				return FALSE;
+			}				
 		}
-		
 		
 		$this->sftp = @ssh2_sftp($this->conn_id);
 	}
@@ -154,7 +144,11 @@ class SFTP {
 	 */
 	private function _login_keys()
 	{
-		return @ssh2_auth_pubkey_file($this->conn_id, $this->username, $this->pubkeyfile, $this->privkeyfile); // need to support passphrase
+		if ($this->passphrse != '') 
+		{
+			return @ssh2_auth_pubkey_file($this->conn_id, $this->username, $this->pubkeyfile, $this->prikeyfile, $this->passphrse);
+		}
+		return @ssh2_auth_pubkey_file($this->conn_id, $this->username, $this->pubkeyfile, $this->prikeyfile);
 	}
 
 
