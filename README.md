@@ -23,7 +23,7 @@ Drop this file into the ./application/libraries/ folder in your CodeIgniter inst
 
 This lib has the same methods as the CodeIgniter FTP Class.
 
-## Example (username/password)
+## Example (username/password) 
 
 ```
 $this->load->library('sftp');
